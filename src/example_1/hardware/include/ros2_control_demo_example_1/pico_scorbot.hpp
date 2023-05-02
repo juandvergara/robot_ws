@@ -46,22 +46,22 @@ public:
   void connect(const std::string &serial_upper_device, const std::string &serial_lower_device, int32_t baud_rate, int32_t timeout_ms)
   {
     timeout_ms_ = timeout_ms;
-    serial_upper_conn_.Open(serial_upper_device);
-    serial_upper_conn_.SetBaudRate(convert_baud_rate(baud_rate));
+    serial_upper_controller_conn_.Open(serial_upper_device);
+    serial_upper_controller_conn_.SetBaudRate(convert_baud_rate(baud_rate));
 
-    serial_lower_conn_.Open(serial_lower_device);
-    serial_lower_conn_.SetBaudRate(convert_baud_rate(baud_rate));
+    serial_lower_controller_conn_.Open(serial_lower_device);
+    serial_lower_controller_conn_.SetBaudRate(convert_baud_rate(baud_rate));
   }
 
   void disconnect()
   {
-    serial_upper_conn_.Close();
-    serial_lower_conn_.Close();
+    serial_upper_controller_conn_.Close();
+    serial_lower_controller_conn_.Close();
   }
 
   bool connected() const
   {
-    return serial_upper_conn_.IsOpen() && serial_lower_conn_.IsOpen();
+    return serial_upper_controller_conn_.IsOpen() && serial_lower_controller_conn_.IsOpen();
   }
 
   void sendDataToDevices(std::vector<double> &data)
@@ -71,42 +71,38 @@ public:
       std::cout << "Error: Input data must be a vector of size 7." << std::endl;
       return;
     }
-    std::string position_lower = "p " + std::to_string((data)[0]) + "," + std::to_string((data)[1]) + "," + std::to_string((data)[2]);
-    std::string position_upper = "p " + std::to_string((data)[3]) + "," + std::to_string((data)[4]) + "," + std::to_string((data)[5]);
+    std::string position_lower_controller = "p " + std::to_string((data)[0]) + "," + std::to_string((data)[1]) + "," + std::to_string((data)[2]);
+    std::string position_upper_controller = "p " + std::to_string((data)[3]) + "," + std::to_string((data)[4]) + "," + std::to_string((data)[5]);
     std::string position_extruder = "n " + std::to_string((data)[6]);
 
-    serial_lower_conn_.Write(position_lower + "\n");
-    serial_upper_conn_.Write(position_upper + "\n");
-    serial_upper_conn_.Write(position_extruder + "\n");
+    serial_lower_controller_conn_.Write(position_lower_controller + "\n");
+    serial_upper_controller_conn_.Write(position_upper_controller + "\n");
+    serial_upper_controller_conn_.Write(position_extruder + "\n");
   }
 
   void getDataFromDevices(std::vector<double> &data)
   {
-    std::string response;
-    std::string delimiter = ",";
+    std::string response_lower_controller, response_upper_controller;
 
-    serial_lower_conn_.Write("e\n");
-    serial_lower_conn_.ReadLine(response, '\n', timeout_ms_);
+    std::vector<double> previous_data;
 
-    while (response.find(delimiter) != std::string::npos)
-    {
-      std::string dato = response.substr(0, response.find(','));
-      actual_pos_joints.push_back(std::atof(dato.c_str()));
-      response.erase(0, response.find(',') + 1);
+    serial_lower_controller_conn_.Write("e\n");
+    serial_lower_controller_conn_.ReadLine(response_lower_controller, '\n', timeout_ms_);
+
+    serial_upper_controller_conn_.Write("e\n");
+    serial_upper_controller_conn_.ReadLine(response_upper_controller, '\n', timeout_ms_);
+
+    std::stringstream ss(response_lower_controller + "," + response_upper_controller);
+    std::string token;
+    while (std::getline(ss, token, ',')) {
+        previous_data.push_back(std::stod(token));
     }
 
-    for (size_t i = 0; i < actual_pos_joints.size(); i++)
-    {
-      data[i] = actual_pos_joints[i];
-    }
-
-    serial_upper_conn_.Write("e\n");
-    serial_upper_conn_.ReadLine(response, '\n', timeout_ms_);
-
+    data = previous_data;
   }
 
 private:
-  LibSerial::SerialPort serial_lower_conn_, serial_upper_conn_;
+  LibSerial::SerialPort serial_lower_controller_conn_, serial_upper_controller_conn_;
   std::vector<double> actual_pos_joints, actual_vel_joints;
   int timeout_ms_;
 };
