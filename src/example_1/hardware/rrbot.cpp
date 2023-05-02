@@ -148,20 +148,20 @@ namespace ros2_control_demo_example_1
 
     // scorbot_.connect();
 
-    // for (int i = 0; i < hw_start_sec_; i++)
-    // {
-    //   rclcpp::sleep_for(std::chrono::seconds(1));
-    //   RCLCPP_INFO(
-    //     rclcpp::get_logger("RRBotSystemPositionOnlyHardware"), "%.1f seconds left...",
-    //     hw_start_sec_ - i);
-    // }
-    // // END: This part here is for exemplary purposes - Please do not copy to your production code
+    for (int i = 0; i < hw_start_sec_; i++)
+    {
+      rclcpp::sleep_for(std::chrono::seconds(1));
+      RCLCPP_INFO(
+        rclcpp::get_logger("RRBotSystemPositionOnlyHardware"), "%.1f seconds left...",
+        hw_start_sec_ - i);
+    }
+    // END: This part here is for exemplary purposes - Please do not copy to your production code
 
-    // // command and state should be equal when starting
-    // for (uint i = 0; i < hw_states_.size(); i++)
-    // {
-    //   hw_commands_[i] = hw_states_[i];
-    // }
+    // command and state should be equal when starting
+    for (uint i = 0; i < hw_states_.size(); i++)
+    {
+      hw_commands_[i] = hw_states_[i];
+    }
 
     RCLCPP_INFO(rclcpp::get_logger("RRBotSystemPositionOnlyHardware"), "Successfully activated!");
 
@@ -186,7 +186,7 @@ namespace ros2_control_demo_example_1
   {
     RCLCPP_INFO(rclcpp::get_logger("RRBotSystemPositionOnlyHardware"), "Reading...");
 
-    // scorbot_.read_encoder_values();
+    scorbot_.getDataFromDevices(hw_states_);
 
     RCLCPP_INFO(rclcpp::get_logger("RRBotSystemPositionOnlyHardware"), "Joints successfully read!");
 
@@ -199,7 +199,7 @@ namespace ros2_control_demo_example_1
 
     RCLCPP_INFO(rclcpp::get_logger("RRBotSystemPositionOnlyHardware"), "Writing...");
 
-    // scorbot_.set_motor_values();
+    scorbot_.sendDataToDevices(hw_commands_);
 
     RCLCPP_INFO(
         rclcpp::get_logger("RRBotSystemPositionOnlyHardware"), "Joints successfully written!");
