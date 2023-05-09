@@ -12,14 +12,55 @@
         <param name="timeout_ms">100</param>
       </hardware>
 
-      <joint name="${prefix}joint1">
+      <joint name="${prefix}slide_base_joint">
         <command_interface name="position">
           <param name="min">-1</param>
           <param name="max">1</param>
         </command_interface>
         <state_interface name="position"/>
       </joint>
-      <joint name="${prefix}joint2">
+
+      <joint name="${prefix}body_joint">
+        <command_interface name="position">
+          <param name="min">-1</param>
+          <param name="max">1</param>
+        </command_interface>
+        <state_interface name="position"/>
+      </joint>
+
+      <joint name="${prefix}shoulder_joint">
+        <command_interface name="position">
+          <param name="min">-1</param>
+          <param name="max">1</param>
+        </command_interface>
+        <state_interface name="position"/>
+      </joint>
+
+      <joint name="${prefix}elbow_joint">
+        <command_interface name="position">
+          <param name="min">-1</param>
+          <param name="max">1</param>
+        </command_interface>
+        <state_interface name="position"/>
+      </joint>
+      
+      <joint name="${prefix}wrist_joint">
+        <command_interface name="position">
+          <param name="min">-1</param>
+          <param name="max">1</param>
+        </command_interface>
+        <state_interface name="position"/>
+      </joint>
+
+      <joint name="${prefix}roll_wrist_joint">
+        <command_interface name="position">
+          <param name="min">-1</param>
+          <param name="max">1</param>
+        </command_interface>
+        <state_interface name="position"/>
+      </joint>
+
+      <joint name="${prefix}extruder_screw_joint">
         <command_interface name="position">
           <param name="min">-1</param>
           <param name="max">1</param>

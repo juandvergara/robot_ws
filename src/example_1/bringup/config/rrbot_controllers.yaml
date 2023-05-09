@@ -15,16 +15,26 @@ controller_manager:
 forward_position_controller:
   ros__parameters:
     joints:
-      - joint1
-      - joint2
+      - slide_base_joint
+      - body_joint
+      - shoulder_joint
+      - elbow_joint
+      - wrist_joint
+      - roll_wrist_joint
+      - extruder_screw_joint
     interface_name: position
 
 
 joint_trajectory_position_controller:
   ros__parameters:
     joints:
-      - joint1
-      - joint2
+      - slide_base_joint
+      - body_joint
+      - shoulder_joint
+      - elbow_joint
+      - wrist_joint
+      - roll_wrist_joint
+      - extruder_screw_joint
 
     command_interfaces:
       - position
