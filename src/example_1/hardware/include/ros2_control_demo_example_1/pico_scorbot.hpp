@@ -6,6 +6,8 @@
 #include <libserial/SerialStream.h>
 #include <iostream>
 
+#define PI 3.14159265359
+
 LibSerial::BaudRate convert_baud_rate(int baud_rate)
 {
   // Just handle some common baud rates
@@ -71,8 +73,16 @@ public:
       std::cout << "Error: Input data must be a vector of size 7." << std::endl;
       return;
     }
-    std::string position_lower_controller = "p " + std::to_string((data)[0]) + "," + std::to_string((data)[1]) + "," + std::to_string((data)[2]);
-    std::string position_upper_controller = "p " + std::to_string((data)[3]) + "," + std::to_string((data)[4]) + "," + std::to_string((data)[5]);
+
+    double slide_base_position = data[0];
+    double body_position = -data[1] * 180.0 / PI;
+    double shoulder_position = data[2] * 180.0 / PI;
+    double elbow_position = -data[3] * 180.0 / PI - shoulder_position;
+    double wrist_left_position = (-data[4] + data[5]) * 90.0 / PI + elbow_position;
+    double wrist_right_position = (data[4] + data[5]) * 90.0 / PI - elbow_position;
+
+    std::string position_lower_controller = "p " + std::to_string(slide_base_position) + "," + std::to_string(body_position) + "," + std::to_string(shoulder_position);
+    std::string position_upper_controller = "p " + std::to_string(elbow_position) + "," + std::to_string(wrist_left_position) + "," + std::to_string(wrist_right_position);
     // std::string position_extruder = "n " + std::to_string((data)[6]);
 
     serial_lower_controller_conn_.Write(position_lower_controller + "\n");
@@ -84,7 +94,7 @@ public:
   {
     std::string response_lower_controller, response_upper_controller;
 
-    std::vector<double> previous_data;
+    std::vector<double> data_to_controllers;
 
     serial_lower_controller_conn_.Write("e\n");
     serial_lower_controller_conn_.ReadLine(response_lower_controller, '\n', timeout_ms_);
@@ -95,10 +105,17 @@ public:
     std::stringstream ss(response_lower_controller + "," + response_upper_controller);
     std::string token;
     while (std::getline(ss, token, ',')) {
-        previous_data.push_back(std::stod(token));
+        data_to_controllers.push_back(std::stod(token));
     }
 
-    data = previous_data;
+    data[0] = data_to_controllers[0] / 100.0;
+    data[1] = -data_to_controllers[1] * PI / 180.0;
+    data[2] = data_to_controllers[2] * PI / 180.0;
+    data[3] = -data_to_controllers[3] * PI / 180.0 - data_to_controllers[2] * PI / 180.0;
+    data[4] = (-data_to_controllers[4] + data_to_controllers[5]) * PI / 180.0 + data_to_controllers[3] * PI / 180.0;
+    data[5] = (data_to_controllers[4] + data_to_controllers[5]) * PI / 180.0;
+    data[6] = data_to_controllers[6] * PI / 180.0;
+
   }
 
 private:
