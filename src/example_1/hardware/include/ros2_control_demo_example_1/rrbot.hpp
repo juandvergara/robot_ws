@@ -32,50 +32,56 @@
 
 namespace ros2_control_demo_example_1
 {
-  class RRBotSystemPositionOnlyHardware : public hardware_interface::SystemInterface
-  {
-  public:
-    RCLCPP_SHARED_PTR_DEFINITIONS(RRBotSystemPositionOnlyHardware);
+    class RRBotSystemPositionOnlyHardware : public hardware_interface::SystemInterface
+    {
 
-    ROS2_CONTROL_DEMO_EXAMPLE_1_PUBLIC
-    hardware_interface::CallbackReturn on_init(
-        const hardware_interface::HardwareInfo &info) override;
+        struct Config
+        {
+            std::string lower_device = "";
+            std::string upper_device = "";
+            int baud_rate = 0;
+            int timeout_ms = 0;
+        };
 
-    ROS2_CONTROL_DEMO_EXAMPLE_1_PUBLIC
-    hardware_interface::CallbackReturn on_configure(
-        const rclcpp_lifecycle::State &previous_state) override;
+    public:
+        RCLCPP_SHARED_PTR_DEFINITIONS(RRBotSystemPositionOnlyHardware);
 
-    ROS2_CONTROL_DEMO_EXAMPLE_1_PUBLIC
-    std::vector<hardware_interface::StateInterface> export_state_interfaces() override;
+        ROS2_CONTROL_DEMO_EXAMPLE_1_PUBLIC
+        hardware_interface::CallbackReturn on_init(
+            const hardware_interface::HardwareInfo &info) override;
 
-    ROS2_CONTROL_DEMO_EXAMPLE_1_PUBLIC
-    std::vector<hardware_interface::CommandInterface> export_command_interfaces() override;
+        ROS2_CONTROL_DEMO_EXAMPLE_1_PUBLIC
+        hardware_interface::CallbackReturn on_configure(
+            const rclcpp_lifecycle::State &previous_state) override;
 
-    ROS2_CONTROL_DEMO_EXAMPLE_1_PUBLIC
-    hardware_interface::CallbackReturn on_activate(
-        const rclcpp_lifecycle::State &previous_state) override;
+        ROS2_CONTROL_DEMO_EXAMPLE_1_PUBLIC
+        std::vector<hardware_interface::StateInterface> export_state_interfaces() override;
 
-    ROS2_CONTROL_DEMO_EXAMPLE_1_PUBLIC
-    hardware_interface::CallbackReturn on_deactivate(
-        const rclcpp_lifecycle::State &previous_state) override;
+        ROS2_CONTROL_DEMO_EXAMPLE_1_PUBLIC
+        std::vector<hardware_interface::CommandInterface> export_command_interfaces() override;
 
-    ROS2_CONTROL_DEMO_EXAMPLE_1_PUBLIC
-    hardware_interface::return_type read(
-        const rclcpp::Time &time, const rclcpp::Duration &period) override;
+        ROS2_CONTROL_DEMO_EXAMPLE_1_PUBLIC
+        hardware_interface::CallbackReturn on_activate(
+            const rclcpp_lifecycle::State &previous_state) override;
 
-    ROS2_CONTROL_DEMO_EXAMPLE_1_PUBLIC
-    hardware_interface::return_type write(
-        const rclcpp::Time &time, const rclcpp::Duration &period) override;
+        ROS2_CONTROL_DEMO_EXAMPLE_1_PUBLIC
+        hardware_interface::CallbackReturn on_deactivate(
+            const rclcpp_lifecycle::State &previous_state) override;
 
-  private:
-    double hw_start_sec_;
-    double hw_stop_sec_;
-    double hw_slowdown_;
+        ROS2_CONTROL_DEMO_EXAMPLE_1_PUBLIC
+        hardware_interface::return_type read(
+            const rclcpp::Time &time, const rclcpp::Duration &period) override;
 
-    PicoScorbot scorbot_;
-    std::vector<double> hw_commands_;
-    std::vector<double> hw_states_;
-  };
+        ROS2_CONTROL_DEMO_EXAMPLE_1_PUBLIC
+        hardware_interface::return_type write(
+            const rclcpp::Time &time, const rclcpp::Duration &period) override;
+
+    private:
+        PicoScorbot scorbot_;
+        Config cfg_;
+        std::vector<double> hw_commands_;
+        std::vector<double> hw_states_;
+    };
 
 } // namespace ros2_control_demo_example_1
 

@@ -73,11 +73,11 @@ public:
     }
     std::string position_lower_controller = "p " + std::to_string((data)[0]) + "," + std::to_string((data)[1]) + "," + std::to_string((data)[2]);
     std::string position_upper_controller = "p " + std::to_string((data)[3]) + "," + std::to_string((data)[4]) + "," + std::to_string((data)[5]);
-    std::string position_extruder = "n " + std::to_string((data)[6]);
+    // std::string position_extruder = "n " + std::to_string((data)[6]);
 
     serial_lower_controller_conn_.Write(position_lower_controller + "\n");
     serial_upper_controller_conn_.Write(position_upper_controller + "\n");
-    serial_upper_controller_conn_.Write(position_extruder + "\n");
+    // serial_upper_controller_conn_.Write(position_extruder + "\n");
   }
 
   void getDataFromDevices(std::vector<double> &data)
