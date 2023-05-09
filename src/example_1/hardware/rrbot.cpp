@@ -35,10 +35,11 @@ namespace ros2_control_demo_example_1
       return hardware_interface::CallbackReturn::ERROR;
     }
 
-    // BEGIN: This part here is for exemplary purposes - Please do not copy to your production code
-    hw_start_sec_ = stod(info_.hardware_parameters["example_param_hw_start_duration_sec"]);
-    hw_stop_sec_ = stod(info_.hardware_parameters["example_param_hw_stop_duration_sec"]);
-    hw_slowdown_ = stod(info_.hardware_parameters["example_param_hw_slowdown"]);
+    cfg_.upper_device = info_.hardware_parameters["upper_device"];
+    cfg_.lower_device = info_.hardware_parameters["lower_device"];
+    cfg_.baud_rate = stod(info_.hardware_parameters["baud_rate"]);
+    cfg_.timeout_ms = stod(info_.hardware_parameters["timeout_ms"]);
+   
     // END: This part here is for exemplary purposes - Please do not copy to your production code
     hw_states_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
     hw_commands_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
@@ -89,18 +90,8 @@ namespace ros2_control_demo_example_1
   hardware_interface::CallbackReturn RRBotSystemPositionOnlyHardware::on_configure(
       const rclcpp_lifecycle::State & /*previous_state*/)
   {
-    // BEGIN: This part here is for exemplary purposes - Please do not copy to your production code
     RCLCPP_INFO(
         rclcpp::get_logger("RRBotSystemPositionOnlyHardware"), "Configuring ...please wait...");
-
-    for (int i = 0; i < hw_start_sec_; i++)
-    {
-      rclcpp::sleep_for(std::chrono::seconds(1));
-      RCLCPP_INFO(
-          rclcpp::get_logger("RRBotSystemPositionOnlyHardware"), "%.1f seconds left...",
-          hw_start_sec_ - i);
-    }
-    // END: This part here is for exemplary purposes - Please do not copy to your production code
 
     // reset values always when configuring hardware
     for (uint i = 0; i < hw_states_.size(); i++)
@@ -146,16 +137,7 @@ namespace ros2_control_demo_example_1
     RCLCPP_INFO(
         rclcpp::get_logger("RRBotSystemPositionOnlyHardware"), "Activating ...please wait...");
 
-    // scorbot_.connect();
-
-    for (int i = 0; i < hw_start_sec_; i++)
-    {
-      rclcpp::sleep_for(std::chrono::seconds(1));
-      RCLCPP_INFO(
-        rclcpp::get_logger("RRBotSystemPositionOnlyHardware"), "%.1f seconds left...",
-        hw_start_sec_ - i);
-    }
-    // END: This part here is for exemplary purposes - Please do not copy to your production code
+    scorbot_.connect(cfg_.upper_device, cfg_.lower_device, cfg_.baud_rate, cfg_.timeout_ms);
 
     // command and state should be equal when starting
     for (uint i = 0; i < hw_states_.size(); i++)
@@ -184,11 +166,11 @@ namespace ros2_control_demo_example_1
   hardware_interface::return_type RRBotSystemPositionOnlyHardware::read(
       const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/)
   {
-    RCLCPP_INFO(rclcpp::get_logger("RRBotSystemPositionOnlyHardware"), "Reading...");
+    // RCLCPP_INFO(rclcpp::get_logger("RRBotSystemPositionOnlyHardware"), "Reading...");
 
     scorbot_.getDataFromDevices(hw_states_);
 
-    RCLCPP_INFO(rclcpp::get_logger("RRBotSystemPositionOnlyHardware"), "Joints successfully read!");
+    // RCLCPP_INFO(rclcpp::get_logger("RRBotSystemPositionOnlyHardware"), "Joints successfully read!");
 
     return hardware_interface::return_type::OK;
   }
@@ -197,12 +179,12 @@ namespace ros2_control_demo_example_1
       const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/)
   {
 
-    RCLCPP_INFO(rclcpp::get_logger("RRBotSystemPositionOnlyHardware"), "Writing...");
+    // RCLCPP_INFO(rclcpp::get_logger("RRBotSystemPositionOnlyHardware"), "Writing...");
 
     scorbot_.sendDataToDevices(hw_commands_);
 
-    RCLCPP_INFO(
-        rclcpp::get_logger("RRBotSystemPositionOnlyHardware"), "Joints successfully written!");
+    // RCLCPP_INFO(
+        // rclcpp::get_logger("RRBotSystemPositionOnlyHardware"), "Joints successfully written!");
 
     return hardware_interface::return_type::OK;
   }
