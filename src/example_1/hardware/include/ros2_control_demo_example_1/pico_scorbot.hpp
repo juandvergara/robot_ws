@@ -78,8 +78,8 @@ public:
     double body_position = -data[1] * 180.0 / PI;
     double shoulder_position = data[2] * 180.0 / PI;
     double elbow_position = -data[3] * 180.0 / PI - shoulder_position;
-    double wrist_left_position = (-data[4] + data[5]) * 90.0 / PI + elbow_position;
-    double wrist_right_position = (data[4] + data[5]) * 90.0 / PI - elbow_position;
+    double wrist_left_position = (-data[4] + data[5]) * 180.0 / PI + elbow_position;
+    double wrist_right_position = (data[4] + data[5]) * 180.0 / PI - elbow_position;
 
     std::string position_lower_controller = "p " + std::to_string(slide_base_position) + "," + std::to_string(body_position) + "," + std::to_string(shoulder_position);
     std::string position_upper_controller = "p " + std::to_string(elbow_position) + "," + std::to_string(wrist_left_position) + "," + std::to_string(wrist_right_position);
