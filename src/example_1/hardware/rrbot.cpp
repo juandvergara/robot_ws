@@ -39,7 +39,7 @@ namespace ros2_control_demo_example_1
     cfg_.lower_device = info_.hardware_parameters["lower_device"];
     cfg_.baud_rate = stod(info_.hardware_parameters["baud_rate"]);
     cfg_.timeout_ms = stod(info_.hardware_parameters["timeout_ms"]);
-   
+
     // END: This part here is for exemplary purposes - Please do not copy to your production code
     hw_states_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
     hw_commands_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
@@ -138,12 +138,18 @@ namespace ros2_control_demo_example_1
         rclcpp::get_logger("RRBotSystemPositionOnlyHardware"), "Activating ...please wait...");
 
     scorbot_.connect(cfg_.upper_device, cfg_.lower_device, cfg_.baud_rate, cfg_.timeout_ms);
+    scorbot_.getDataFromDevices(hw_states_);
+
+    rclcpp::sleep_for(std::chrono::nanoseconds(100000));
 
     // command and state should be equal when starting
-    for (uint i = 0; i < hw_states_.size(); i++)
+    for (uint i = 0; i < hw_states_.size() - 3; i++)
     {
       hw_commands_[i] = hw_states_[i];
     }
+
+    // hw_commands_[4] = (-hw_states_[4] + hw_states_[5]) * 180.0 / PI - hw_states_[3] * 180.0 / PI;
+    // hw_commands_[5] = (hw_states_[4] + hw_states_[5]) * 180.0 / PI + hw_states_[3] * 180.0 / PI;
 
     RCLCPP_INFO(rclcpp::get_logger("RRBotSystemPositionOnlyHardware"), "Successfully activated!");
 
@@ -184,7 +190,7 @@ namespace ros2_control_demo_example_1
     scorbot_.sendDataToDevices(hw_commands_);
 
     // RCLCPP_INFO(
-        // rclcpp::get_logger("RRBotSystemPositionOnlyHardware"), "Joints successfully written!");
+    // rclcpp::get_logger("RRBotSystemPositionOnlyHardware"), "Joints successfully written!");
 
     return hardware_interface::return_type::OK;
   }
