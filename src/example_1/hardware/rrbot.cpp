@@ -141,15 +141,18 @@ namespace ros2_control_demo_example_1
     scorbot_.getDataFromDevices(hw_states_);
 
     rclcpp::sleep_for(std::chrono::nanoseconds(100000));
-
+    
     // command and state should be equal when starting
-    for (uint i = 0; i < hw_states_.size() - 3; i++)
+    for (uint i = 0; i < hw_states_.size(); i++)
     {
       hw_commands_[i] = hw_states_[i];
     }
 
-    // hw_commands_[4] = (-hw_states_[4] + hw_states_[5]) * 180.0 / PI - hw_states_[3] * 180.0 / PI;
-    // hw_commands_[5] = (hw_states_[4] + hw_states_[5]) * 180.0 / PI + hw_states_[3] * 180.0 / PI;
+    RCLCPP_WARN(
+        rclcpp::get_logger("RRBotSystemPositionOnlyHardware"),
+        "Encoder left %s, encoder right %s.", std::to_string(hw_commands_[4]).c_str(), std::to_string(hw_commands_[5]).c_str());
+    // hw_commands_[4] = (-hw_states_[4] + hw_states_[5] - hw_states_[3] - hw_states_[2]) * 180.0 / PI;
+    // hw_commands_[5] = (hw_states_[4] + hw_states_[5] + hw_states_[3] + hw_states_[2]) * 180.0 / PI;
 
     RCLCPP_INFO(rclcpp::get_logger("RRBotSystemPositionOnlyHardware"), "Successfully activated!");
 
