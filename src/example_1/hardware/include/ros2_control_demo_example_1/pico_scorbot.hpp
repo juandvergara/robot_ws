@@ -80,14 +80,20 @@ public:
     double elbow_position = -data[3] * 180.0 / PI - shoulder_position;
     double wrist_left_position = (-data[4] + data[5]) * 180.0 / PI + elbow_position;
     double wrist_right_position = (data[4] + data[5]) * 180.0 / PI - elbow_position;
-
+ 
     std::string position_lower_controller = "p " + std::to_string(slide_base_position) + "," + std::to_string(body_position) + "," + std::to_string(shoulder_position);
     std::string position_upper_controller = "p " + std::to_string(elbow_position) + "," + std::to_string(wrist_left_position) + "," + std::to_string(wrist_right_position);
-    // std::string position_extruder = "n " + std::to_string((data)[6]);
 
     serial_lower_controller_conn_.Write(position_lower_controller + "\n");
     serial_upper_controller_conn_.Write(position_upper_controller + "\n");
-    // serial_upper_controller_conn_.Write(position_extruder + "\n");
+    
+    if (extruder_pos != data[6]){
+        std::string position_extruder = "n " + std::to_string(data[6]) + "," + "20";
+        serial_upper_controller_conn_.Write(position_extruder + "\n");
+        extruder_pos = data[6];
+    }
+
+    
   }
 
   void getDataFromDevices(std::vector<double> &data)
@@ -121,6 +127,7 @@ public:
 private:
   LibSerial::SerialPort serial_lower_controller_conn_, serial_upper_controller_conn_;
   std::vector<double> actual_pos_joints, actual_vel_joints;
+  double extruder_pos;
   int timeout_ms_;
 };
 
