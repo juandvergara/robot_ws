@@ -92,8 +92,6 @@ public:
         serial_upper_controller_conn_.Write(position_extruder + "\n");
         extruder_pos = data[6];
     }
-
-    
   }
 
   void getDataFromDevices(std::vector<double> &data)
