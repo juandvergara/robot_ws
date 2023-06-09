@@ -3,7 +3,7 @@ import rclpy
 from builtin_interfaces.msg import Duration
 
 import numpy as np
-from math import radians, cos, sin, atan2, sqrt
+from math import radians, cos, sin, atan2, sqrt, degrees
 
 from rclpy.node import Node
 from rclpy.action import ActionClient
@@ -19,7 +19,54 @@ wrist_roll2hotend = np.array([[cos(radians(-90)),  0, sin(radians(-90)), -0.049]
 hotend2wrist_roll = np.linalg.inv(wrist_roll2hotend)
 
 
-def inverse_kinematics_scorbot(position_goal, rotation_goal, extruder_pos, wrist):
+gcode_filename = '/home/ras-rpi/Shape-Box.gcode'
+
+def extract_values_from_gcode(filename):
+    data = []
+    # Initial values for X, Y, Z, E, R, P, Y, NANOSEC
+    last_values = [0, 0, 0, 0, 0, 0, 0]
+    time_sum_sec = 0  # Variable to store the cumulative sum of time_nanosec
+
+    with open(filename, 'r') as file:
+        for line in file:
+            if line.startswith('G1'):
+                words = line.split()
+                x = next((float(word[1:]) for word in words if word.startswith(
+                    'X')), last_values[0]) / 1000
+                y = next((float(word[1:]) for word in words if word.startswith(
+                    'Y')), last_values[1]) / 1000
+                z = next(
+                    (float(word[1:]) for word in words if word.startswith('Z')), last_values[2])
+                e = next(
+                    (float(word[1:]) for word in words if word.startswith('E')), last_values[3])
+                f = next(
+                    (float(word[1:]) for word in words if word.startswith('F')), last_values[4])
+
+                if f != last_values[4]:
+                    f /= 60 * 1000  # Divide F value by 60
+                if z != last_values[2]:
+                    z /= 1000
+
+                if last_values == [0, 0, 0, 0, 0, 0, 0]:
+                    last_values = [x, y, z, e, f, 180, -90]
+                    continue
+
+                distance = sqrt(
+                    (x - last_values[0]) ** 2 + (y - last_values[1]) ** 2 + (z - last_values[2]) ** 2)
+                time_sum_sec += (distance / f)
+                time_sec = int(time_sum_sec)
+                time_nano_sec = int((time_sum_sec - time_sec) * 1e9)
+                atan2_base = -degrees(atan2(x, y - 0.170)) - 90
+
+                last_values = [x, y, z, e, f, 180, atan2_base]
+                row = np.array(last_values[:3] + [0] + last_values[5:] + last_values[3:4] + [time_sec] + [
+                               time_nano_sec], dtype=np.float64)  # Create the modified row as a NumPy array
+
+                data.append(row)  # Append the modified row to data
+
+    return np.array(data)
+
+def inverse_kinematics_scorbot(position_goal, rotation_goal, extruder_pos, sec_time_between_points, nanosec_time_between_points, wrist):
     global hotend2wrist_roll
     rotation = [radians(rotation_goal[0]),
                 radians(rotation_goal[1]),
@@ -99,7 +146,7 @@ def inverse_kinematics_scorbot(position_goal, rotation_goal, extruder_pos, wrist
     print(f"{slide_base:.6f}, {theta_1:.6f}, {theta_2:.6f}, {theta_3:.6f}, {theta_4:.6f}, {theta_5:.6f}")
     print("Success pose! \n")
 
-    result = [slide_base, theta_1, theta_2, theta_3, theta_4, theta_5, extruder_pos]
+    result = [slide_base, theta_1, theta_2, theta_3, theta_4, theta_5, extruder_pos, sec_time_between_points, nanosec_time_between_points,]
 
     return result
 
@@ -114,37 +161,11 @@ class ScorbotActionClient(Node):
                                                 "wrist_joint", "roll_wrist_joint", "extruder_screw_joint"]
 
     def calculateTrajectory(self):
-        time_points = 10
-        time_between_points = 1
-        num_rows = 4
+        time_points = 0
+        time_between_points = 2
+        num_rows = 3
 
-        points_xyz_rpy = np.array([
-            [0.47, 0.4, 0.1855, 0, 180, -155.1, 0],
-            [0.47, 0.3, 0.1840, 0, 180, -166.5, 10],
-            [0.37, 0.3, 0.1820, 0, 180, -162.0, 10.01],
-            [0.37, 0.4, 0.1820, 0, 180, -149.6, 10.02],
-            [0.47, 0.4, 0.1855, 0, 180, -155.1, 10.03],
-            [0.47, 0.4, 0.1860, 0, 180, -155.1, 10.04],
-            [0.47, 0.3, 0.1845, 0, 180, -166.5, 10.05],
-            [0.37, 0.3, 0.1825, 0, 180, -162.0, 10.06],
-            [0.37, 0.4, 0.1825, 0, 180, -149.6, 10.07],
-            [0.47, 0.4, 0.1860, 0, 180, -155.1, 0],
-            [0.47, 0.4, 0.1865, 0, 180, -155.1, 10.04],
-            [0.47, 0.3, 0.1855, 0, 180, -166.5, 10.05],
-            [0.37, 0.3, 0.1830, 0, 180, -162.0, 10.06],
-            [0.37, 0.4, 0.1830, 0, 180, -149.6, 10.07],
-            [0.47, 0.4, 0.1865, 0, 180, -155.1, 0],
-            [0.47, 0.4, 0.1870, 0, 180, -155.1, 10.04],
-            [0.47, 0.3, 0.1860, 0, 180, -166.5, 10.05],
-            [0.37, 0.3, 0.1835, 0, 180, -162.0, 10.06],
-            [0.37, 0.4, 0.1835, 0, 180, -149.6, 10.07],
-            [0.47, 0.4, 0.1875, 0, 180, -155.1, 0],
-            [0.47, 0.4, 0.1880, 0, 180, -155.1, 10.04],
-            [0.47, 0.3, 0.1865, 0, 180, -166.5, 10.05],
-            [0.37, 0.3, 0.1840, 0, 180, -162.0, 10.06],
-            [0.37, 0.4, 0.1840, 0, 180, -149.6, 10.07],
-            [0.47, 0.4, 0.1880, 0, 180, -155.1, 0],
-        ])
+        points_xyz_rpy = extract_values_from_gcode(gcode_filename)
 
         post_process_xyz_rpy = []
 
@@ -163,17 +184,20 @@ class ScorbotActionClient(Node):
 
         trajectory_points = []
 
-        for data_point in post_process_xyz_rpy:
+        for data_point in points_xyz_rpy:
             position = [float(i) for i in data_point[0:3]]
             rotation = [float(i) for i in data_point[3:6]]
             extruder_pos = float(data_point[6])
-            result = inverse_kinematics_scorbot(position, rotation, extruder_pos, True)
+            sec_time_between_points = int(data_point[7])
+            nanosec_time_between_points = int(data_point[8])
+            result = inverse_kinematics_scorbot(position, rotation, extruder_pos, sec_time_between_points, nanosec_time_between_points, True)
             trajectory_points.append(result)
 
         for positions in trajectory_points:
             trajectory_point = JointTrajectoryPoint()
-            trajectory_point.positions = positions
-            trajectory_point.time_from_start = Duration(sec=time_points)
+            trajectory_point.positions = positions[:7]
+            print(positions[7:])
+            trajectory_point.time_from_start = Duration(sec=int(positions[7:8][0]),nanosec=int(positions[8:9][0]))
             self.goal_msg.trajectory.points.append(trajectory_point)
             time_points += time_between_points
 
