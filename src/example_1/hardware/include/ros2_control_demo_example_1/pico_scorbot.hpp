@@ -87,10 +87,12 @@ public:
     serial_lower_controller_conn_.Write(position_lower_controller + "\n");
     serial_upper_controller_conn_.Write(position_upper_controller + "\n");
     
-    if (extruder_pos != data[6]){
+    if (last_extruder_pos != data[6]){
+        extruder_pos = (data[6] - last_extruder_pos)*10;
+        std::cout << extruder_pos << std::endl;
         std::string position_extruder = "n " + std::to_string(data[6]) + "," + "15";
         serial_upper_controller_conn_.Write(position_extruder + "\n");
-        extruder_pos = data[6];
+        last_extruder_pos = data[6];
     }
   }
 
@@ -132,7 +134,8 @@ public:
 private:
   LibSerial::SerialPort serial_lower_controller_conn_, serial_upper_controller_conn_;
   std::vector<double> actual_pos_joints, actual_vel_joints;
-  double extruder_pos;
+  double extruder_pos = 0;
+  double last_extruder_pos = 0;
   int timeout_ms_;
 };
 

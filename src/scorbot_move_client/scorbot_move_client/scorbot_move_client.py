@@ -20,7 +20,7 @@ hotend2wrist_roll = np.linalg.inv(wrist_roll2hotend)
 
 base2station = np.array([[1,  0, 0, 0.0],
                          [0,  1, 0, 0.0],
-                         [0,  0, 1, 0.1756],
+                         [0,  0, 1, 0.165],
                          [0,  0, 0, 1]])
 
 gcode_filename = '/home/ras-rpi/Shape-Box.gcode'
