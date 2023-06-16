@@ -41,6 +41,7 @@ namespace ros2_control_demo_example_1
             std::string upper_device = "";
             int baud_rate = 0;
             int timeout_ms = 0;
+            float k_gamma = 0;
         };
 
     public:
