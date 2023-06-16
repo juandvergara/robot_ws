@@ -88,10 +88,17 @@ public:
     serial_upper_controller_conn_.Write(position_upper_controller + "\n");
     
     if (extruder_pos != data[6]){
-        std::string position_extruder = "n " + std::to_string(data[6]) + "," + "20";
+        std::string position_extruder = "n " + std::to_string(data[6]) + "," + "15";
         serial_upper_controller_conn_.Write(position_extruder + "\n");
         extruder_pos = data[6];
     }
+  }
+
+  void config_k_gamma_gain(float new_k_gamma){
+    std::string set_new_k_gamma = "k " + std::to_string(new_k_gamma);
+
+    serial_lower_controller_conn_.Write(set_new_k_gamma + "\n");
+    serial_upper_controller_conn_.Write(set_new_k_gamma + "\n");
   }
 
   void getDataFromDevices(std::vector<double> &data)
