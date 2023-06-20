@@ -40,6 +40,7 @@ namespace ros2_control_demo_example_1
     cfg_.baud_rate = stod(info_.hardware_parameters["baud_rate"]);
     cfg_.timeout_ms = stod(info_.hardware_parameters["timeout_ms"]);
     cfg_.k_gamma = stof(info_.hardware_parameters["k_gamma"]);
+    cfg_.mm_by_steps = stof(info_.hardware_parameters["mm_by_steps"]);
 
     // END: This part here is for exemplary purposes - Please do not copy to your production code
     hw_states_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
@@ -139,6 +140,7 @@ namespace ros2_control_demo_example_1
         rclcpp::get_logger("RRBotSystemPositionOnlyHardware"), "Activating ...please wait...");
 
     scorbot_.connect(cfg_.upper_device, cfg_.lower_device, cfg_.baud_rate, cfg_.timeout_ms);
+    scorbot_.ConfigExtruder(cfg_.mm_by_steps);
     scorbot_.getDataFromDevices(hw_states_);
 
     rclcpp::sleep_for(std::chrono::nanoseconds(100000));
@@ -150,7 +152,7 @@ namespace ros2_control_demo_example_1
     }
 
     rclcpp::sleep_for(std::chrono::nanoseconds(100000));
-    scorbot_.config_k_gamma_gain(cfg_.k_gamma);
+    scorbot_.configKGammaGain(cfg_.k_gamma);
     rclcpp::sleep_for(std::chrono::nanoseconds(100000));
 
     RCLCPP_WARN(

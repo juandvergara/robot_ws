@@ -88,19 +88,23 @@ public:
     serial_upper_controller_conn_.Write(position_upper_controller + "\n");
     
     if (last_extruder_pos != data[6]){
-        extruder_pos = (data[6] - last_extruder_pos)*10;
-        std::cout << extruder_pos << std::endl;
-        std::string position_extruder = "n " + std::to_string(data[6]) + "," + "15";
+        extruder_pos = (data[6]) * _mm_by_steps * 10;
+        std::string position_extruder = "n " + std::to_string(extruder_pos) + "," + std::to_string(_vel_extruder);
         serial_upper_controller_conn_.Write(position_extruder + "\n");
         last_extruder_pos = data[6];
     }
   }
 
-  void config_k_gamma_gain(float new_k_gamma){
+  void configKGammaGain(float new_k_gamma){
     std::string set_new_k_gamma = "k " + std::to_string(new_k_gamma);
 
     serial_lower_controller_conn_.Write(set_new_k_gamma + "\n");
     serial_upper_controller_conn_.Write(set_new_k_gamma + "\n");
+  }
+
+  void ConfigExtruder(float mm_by_steps){
+    _mm_by_steps = mm_by_steps;
+    _vel_extruder = mm_by_steps * vel_robot;
   }
 
   void getDataFromDevices(std::vector<double> &data)
@@ -136,6 +140,9 @@ private:
   std::vector<double> actual_pos_joints, actual_vel_joints;
   double extruder_pos = 0;
   double last_extruder_pos = 0;
+  float _mm_by_steps;
+  float _vel_extruder;
+  float vel_robot = 20;
   int timeout_ms_;
 };
 

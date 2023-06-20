@@ -42,6 +42,7 @@ namespace ros2_control_demo_example_1
             int baud_rate = 0;
             int timeout_ms = 0;
             float k_gamma = 0;
+            float mm_by_steps = 0;
         };
 
     public:
