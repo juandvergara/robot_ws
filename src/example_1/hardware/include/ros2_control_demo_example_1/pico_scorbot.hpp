@@ -88,8 +88,11 @@ public:
     serial_upper_controller_conn_.Write(position_upper_controller + "\n");
     
     if (last_extruder_pos != data[6]){
-        extruder_pos = (data[6]) * _mm_by_steps * 10;
-        std::string position_extruder = "n " + std::to_string(extruder_pos) + "," + std::to_string(_vel_extruder);
+        // extruder_pos = (data[6]) * _mm_by_steps * 10;
+        // std::string position_extruder = "n " + std::to_string(extruder_pos) + "," + std::to_string(_vel_extruder);
+        extruder_pos = (data[6])*10;
+        // std::cout << extruder_pos << std::endl;
+        std::string position_extruder = "n " + std::to_string(extruder_pos) + "," + "10";
         serial_upper_controller_conn_.Write(position_extruder + "\n");
         last_extruder_pos = data[6];
     }
