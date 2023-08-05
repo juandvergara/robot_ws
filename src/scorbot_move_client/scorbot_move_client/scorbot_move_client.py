@@ -18,12 +18,12 @@ wrist_roll2hotend = np.array([[cos(radians(-90)),  0, sin(radians(-90)), -0.049]
 
 hotend2wrist_roll = np.linalg.inv(wrist_roll2hotend)
 
-base2station = np.array([[1,  0, 0, 0.3],
-                         [0,  1, 0, 0.25],
-                         [0,  0, 1, 0.181],
+base2station = np.array([[1,  0, 0, 0.4],
+                         [0,  1, 0, 0.30],
+                         [0,  0, 1, 0.1815],
                          [0,  0, 0, 1]])
 
-gcode_filename = '/home/ras-rpi/Shape-Box.gcode'
+gcode_filename = '/home/ras-rpi/Vase.gcode'
 
 def post_process_coordenates(data, resolution, lower_limit, upper_limit):
     columns = [[] for _ in range(len(data[0]))]
